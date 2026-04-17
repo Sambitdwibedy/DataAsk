@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/", "destination": "/ds2052_profile_classify_prototype_v2.html" },
+    { "source": "/(.*)", "destination": "/$1" }
+  ]
+}
