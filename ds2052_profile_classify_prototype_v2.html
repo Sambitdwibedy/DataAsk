@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Data Sense · Profile &amp; Classify Tables — DS-2052</title>
+<style>
+/* ── Reset & Base ── */
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#0d1117;color:#e6edf3;font-size:13px;min-height:100vh}
+
+/* ── Top Breadcrumb Bar ── */
+.topbar{background:#161b22;border-bottom:1px solid #30363d;padding:10px 24px;display:flex;align-items:center;gap:14px}
+.btn-back{background:#21262d;border:1px solid #30363d;color:#8b949e;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:500;display:flex;align-items:center;gap:5px;transition:all .15s}
+.btn-back:hover{background:#30363d;color:#e6edf3}
+.app-name{font-size:14px;font-weight:600;color:#e6edf3}
+.badge-enriching{background:#d29922;color:#0d1117;font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;letter-spacing:.3px}
+
+/* ── Page Title ── */
+.page-header{padding:20px 24px 0}
+.page-title{font-size:20px;font-weight:700;color:#e6edf3;margin-bottom:4px}
+.page-subtitle{font-size:12px;color:#8b949e}
+
+/* ── Stat Cards Grid ── */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:16px 24px}
+.stat-card{background:#161b22;border:1px solid #30363d;border-radius:10px;padding:18px 16px;transition:border-color .15s}
+.stat-card:hover{border-color:#6e76ad}
+.stat-num{font-size:28px;font-weight:800;color:#818cf8;margin-bottom:4px;letter-spacing:-1px}
+.stat-label{font-size:12px;color:#8b949e;font-weight:500}
+.stat-sub{font-size:11px;color:#6e7681;margin-top:2px}
+
+/* ── Distribution Panels ── */
+.dist-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 24px 16px}
+.dist-card{background:#161b22;border:1px solid #30363d;border-radius:10px;padding:18px}
+.dist-title{font-size:13px;font-weight:700;color:#e6edf3;margin-bottom:14px}
+.dist-item{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid #21262d}
+.dist-item:last-child{border-bottom:none}
+.dist-key{font-size:12px;color:#8b949e;font-family:Consolas,monospace}
+.dist-val{font-size:12px;font-weight:700;color:#e6edf3}
+.bar-row{display:flex;align-items:center;gap:10px}
+.bar-bg{height:6px;border-radius:3px;background:#21262d;flex:1;overflow:hidden}
+.bar-fill{height:6px;border-radius:3px;background:#818cf8}
+
+/* ── Classification Gate Banner ── */
+.gate-banner{margin:0 24px 14px;background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.35);border-radius:10px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.gate-banner.resolved{background:rgba(74,222,128,.05);border-color:rgba(74,222,128,.3)}
+.gate-left{display:flex;align-items:center;gap:12px}
+.gate-icon{font-size:18px}
+.gate-title{font-size:13px;font-weight:700;color:#f87171}
+.gate-banner.resolved .gate-title{color:#4ade80}
+.gate-desc{font-size:11px;color:#8b949e;margin-top:2px}
+.gate-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.btn-proceed{background:#238636;border:1px solid #2ea043;color:#fff;padding:7px 18px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:6px}
+.btn-proceed:disabled{background:#21262d;border-color:#30363d;color:#484f58;cursor:not-allowed}
+.btn-proceed:not(:disabled):hover{background:#2ea043}
+
+/* ── Bulk Exclusion Bar ── */
+.bulk-bar{margin:0 24px 14px;background:rgba(139,92,246,.07);border:1px solid rgba(139,92,246,.3);border-radius:10px;padding:12px 18px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.bulk-info{display:flex;align-items:center;gap:10px}
+.bulk-count{font-size:13px;font-weight:700;color:#a78bfa}
+.bulk-desc{font-size:11px;color:#8b949e;margin-top:1px}
+.btn-bulk-confirm{background:rgba(139,92,246,.2);border:1px solid rgba(139,92,246,.5);color:#a78bfa;padding:7px 16px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
+.btn-bulk-confirm:hover{background:rgba(139,92,246,.35)}
+.btn-bulk-dismiss{background:transparent;border:1px solid #30363d;color:#8b949e;padding:7px 12px;border-radius:7px;font-size:12px;cursor:pointer}
+.btn-bulk-dismiss:hover{border-color:#6e7681;color:#e6edf3}
+
+/* ── Confidence Legend ── */
+.legend-bar{margin:0 24px 14px;display:flex;align-items:center;gap:20px;padding:10px 16px;background:#161b22;border:1px solid #30363d;border-radius:8px;flex-wrap:wrap}
+.legend-title{font-size:11px;font-weight:700;color:#8b949e;text-transform:uppercase;letter-spacing:.5px;margin-right:4px}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:#8b949e}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.legend-dot.green{background:#4ade80}
+.legend-dot.amber{background:#fbbf24}
+.legend-dot.red{background:#f87171}
+.legend-dot.cyan{background:#22d3ee}
+.legend-sep{width:1px;height:16px;background:#30363d;margin:0 4px}
+
+/* ── Search + Table Container ── */
+.table-section{margin:0 24px 24px}
+.search-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:0}
+.search-wrap{position:relative;flex:1;max-width:600px}
+.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#6e7681;font-size:13px;pointer-events:none}
+.search-box{width:100%;background:#0d1117;border:1px solid #30363d;color:#e6edf3;padding:9px 12px 9px 34px;border-radius:8px;font-size:13px;outline:none;transition:border-color .15s}
+.search-box:focus{border-color:#818cf8}
+.search-box::placeholder{color:#484f58}
+.table-count{font-size:12px;color:#8b949e;white-space:nowrap}
+.audit-btn{background:#21262d;border:1px solid #30363d;color:#8b949e;padding:7px 14px;border-radius:7px;font-size:12px;cursor:pointer;margin-left:10px;display:flex;align-items:center;gap:5px}
+.audit-btn:hover{border-color:#6e7681;color:#e6edf3}
+
+/* ── Main Table ── */
+.tbl-wrap{background:#0d1117;border:1px solid #30363d;border-radius:0 0 10px 10px;overflow:hidden;border-top:none}
+.tbl-head-bar{background:#0d1117;border:1px solid #30363d;border-bottom:none;border-radius:10px 10px 0 0;padding:12px 16px;display:flex;align-items:center;gap:12px}
+table{width:100%;border-collapse:collapse}
+thead{background:#161b22}
+thead th{padding:10px 14px;text-align:left;font-size:11px;font-weight:700;color:#8b949e;text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;border-bottom:1px solid #21262d;cursor:pointer;user-select:none;position:sticky;top:0;z-index:5}
+thead th:hover{color:#e6edf3}
+thead th.num{text-align:right}
+thead th .sort-ico{opacity:.4;margin-left:3px;font-size:9px}
+thead th.sorted .sort-ico{opacity:1;color:#818cf8}
+tbody tr{border-bottom:1px solid #21262d;transition:background .1s}
+tbody tr:hover{background:#161b22}
+tbody tr:last-child{border-bottom:none}
+tbody tr.review-required{background:rgba(248,113,113,.04)}
+tbody tr.excluded-proposed{background:rgba(139,92,246,.04)}
+td{padding:12px 14px;font-size:12px;color:#8b949e;vertical-align:middle}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+td strong{color:#e6edf3;font-weight:600}
+.expand-arrow{color:#6e7681;margin-right:6px;font-size:10px;cursor:pointer;display:inline-block;transition:transform .15s}
+.expand-arrow.open{transform:rotate(90deg)}
+
+/* ── Role Badges ── */
+.role-badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap;display:inline-block;letter-spacing:.2px}
+.role-business{background:rgba(74,222,128,.12);color:#4ade80;border:1px solid rgba(74,222,128,.25)}
+.role-enrichment{background:rgba(34,211,238,.1);color:#22d3ee;border:1px solid rgba(34,211,238,.2)}
+.role-system{background:rgba(139,92,246,.12);color:#a78bfa;border:1px solid rgba(139,92,246,.25)}
+.role-review{background:rgba(248,113,113,.12);color:#f87171;border:1px solid rgba(248,113,113,.3);animation:pulse-border 2s infinite}
+@keyframes pulse-border{0%,100%{border-color:rgba(248,113,113,.3)}50%{border-color:rgba(248,113,113,.7)}}
+
+/* ── Confidence Score ── */
+.conf-cell{display:flex;align-items:center;gap:8px}
+.conf-pill{font-size:11px;font-weight:800;padding:2px 8px;border-radius:4px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.conf-green{background:rgba(74,222,128,.15);color:#4ade80}
+.conf-amber{background:rgba(251,191,36,.12);color:#fbbf24}
+.conf-red{background:rgba(248,113,113,.12);color:#f87171}
+.conf-bar-bg{width:50px;height:4px;background:#21262d;border-radius:2px;overflow:hidden}
+.conf-bar-fill{height:4px;border-radius:2px}
+.review-flag{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;background:rgba(248,113,113,.15);color:#f87171;border:1px solid rgba(248,113,113,.3);margin-left:4px;white-space:nowrap}
+
+/* ── Null Pattern Pill ── */
+.null-pill{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;white-space:nowrap;display:inline-flex;align-items:center;gap:3px}
+.null-low{background:rgba(74,222,128,.12);color:#4ade80;border:1px solid rgba(74,222,128,.2)}
+.null-med{background:rgba(251,191,36,.12);color:#fbbf24;border:1px solid rgba(251,191,36,.2)}
+.null-high{background:rgba(248,113,113,.12);color:#f87171;border:1px solid rgba(248,113,113,.25)}
+.null-none{background:rgba(110,118,129,.1);color:#6e7681;border:1px solid #30363d}
+
+/* ── Currency Badge ── */
+.currency-badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;white-space:nowrap;display:inline-flex;align-items:center;gap:3px}
+.currency-detected{background:rgba(34,211,238,.1);color:#22d3ee;border:1px solid rgba(34,211,238,.2)}
+.currency-multi{background:rgba(129,140,248,.12);color:#818cf8;border:1px solid rgba(129,140,248,.25)}
+.currency-none{background:rgba(110,118,129,.1);color:#6e7681;border:1px solid #30363d}
+
+/* ── Action Buttons ── */
+.btn-override{background:transparent;border:1px solid #30363d;color:#8b949e;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn-override:hover{border-color:#818cf8;color:#818cf8;background:rgba(129,140,248,.08)}
+.btn-confirm-excl{background:transparent;border:1px solid rgba(139,92,246,.35);color:#a78bfa;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s}
+.btn-confirm-excl:hover{background:rgba(139,92,246,.15)}
+.confirmed-chip{font-size:10px;color:#4ade80;font-weight:600;display:flex;align-items:center;gap:4px}
+
+/* ── Expanded Row ── */
+.expand-row td{padding:0}
+.expand-content{padding:16px 20px;background:#0d1117;border-top:1px solid #21262d}
+.expand-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.signal-card{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:12px}
+.signal-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#6e7681;margin-bottom:6px}
+.signal-val{font-size:12px;color:#e6edf3;font-weight:600}
+.signal-sub{font-size:11px;color:#8b949e;margin-top:2px}
+.signal-card.signal-warn{border-color:rgba(251,191,36,.35);background:rgba(251,191,36,.04)}
+.signal-card.signal-alert{border-color:rgba(248,113,113,.35);background:rgba(248,113,113,.04)}
+.signal-card.signal-ok{border-color:rgba(74,222,128,.25);background:rgba(74,222,128,.03)}
+.signal-card.signal-info{border-color:rgba(34,211,238,.25);background:rgba(34,211,238,.03)}
+
+/* ── Override Modal ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{background:#161b22;border:1px solid #30363d;border-radius:14px;width:580px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.6)}
+.modal-header{padding:20px 22px 0;display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:15px;font-weight:700;color:#e6edf3}
+.modal-close{background:transparent;border:none;color:#6e7681;cursor:pointer;font-size:18px;line-height:1;padding:2px 6px;border-radius:4px}
+.modal-close:hover{background:#21262d;color:#e6edf3}
+.modal-body{padding:18px 22px}
+.modal-section{margin-bottom:16px}
+.modal-section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#6e7681;margin-bottom:8px}
+.original-box{background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:12px 14px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.orig-item{font-size:11px}
+.orig-lbl{color:#6e7681;margin-bottom:3px}
+.orig-val{color:#e6edf3;font-weight:600}
+.form-group{margin-bottom:14px}
+.form-label{font-size:12px;font-weight:600;color:#e6edf3;margin-bottom:6px;display:block}
+.form-label .req{color:#f87171;margin-left:2px}
+.form-label .opt{color:#6e7681;font-weight:400;margin-left:4px}
+.form-select{width:100%;background:#0d1117;border:1px solid #30363d;color:#e6edf3;padding:9px 12px;border-radius:7px;font-size:13px;outline:none;cursor:pointer;transition:border-color .15s;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238b949e' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+.form-select:focus{border-color:#818cf8}
+.form-textarea{width:100%;background:#0d1117;border:1px solid #30363d;color:#e6edf3;padding:9px 12px;border-radius:7px;font-size:13px;outline:none;resize:vertical;min-height:80px;font-family:inherit;transition:border-color .15s;line-height:1.5}
+.form-textarea:focus{border-color:#818cf8}
+.form-textarea::placeholder{color:#484f58}
+.char-count{font-size:10px;color:#6e7681;text-align:right;margin-top:3px}
+.char-count.warn{color:#fbbf24}
+.divider{height:1px;background:#21262d;margin:16px 0}
+.section-divider{height:1px;background:#21262d;margin:14px 0;position:relative}
+.section-divider-label{position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:#161b22;padding:0 10px;font-size:10px;font-weight:700;color:#6e7681;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.audit-preview{background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:10px 14px;font-size:11px;color:#8b949e;line-height:1.7}
+.audit-preview strong{color:#e6edf3}
+.modal-footer{padding:0 22px 20px;display:flex;gap:10px;justify-content:flex-end}
+.btn-cancel{background:transparent;border:1px solid #30363d;color:#8b949e;padding:8px 18px;border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s}
+.btn-cancel:hover{border-color:#6e7681;color:#e6edf3}
+.btn-confirm{background:#1f6feb;border:1px solid #388bfd;color:#fff;padding:8px 20px;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s}
+.btn-confirm:hover{background:#388bfd}
+.btn-confirm:disabled{background:#21262d;border-color:#30363d;color:#484f58;cursor:not-allowed}
+
+/* ── Inline info block in modal ── */
+.signal-inline{background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:10px 14px;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+.signal-inline-item{font-size:11px}
+.signal-inline-lbl{color:#6e7681;margin-bottom:2px;font-size:10px;text-transform:uppercase;letter-spacing:.4px;font-weight:700}
+.signal-inline-val{color:#e6edf3;font-weight:600}
+
+/* ── Audit Log Panel ── */
+.audit-panel{margin:0 24px 24px;background:#161b22;border:1px solid #30363d;border-radius:10px;overflow:hidden;display:none}
+.audit-panel.open{display:block}
+.audit-panel-header{padding:14px 18px;border-bottom:1px solid #30363d;display:flex;align-items:center;justify-content:space-between}
+.audit-panel-title{font-size:13px;font-weight:700;color:#e6edf3;display:flex;align-items:center;gap:8px}
+.audit-panel-close{background:transparent;border:none;color:#6e7681;cursor:pointer;font-size:16px}
+.audit-entry{padding:12px 18px;border-bottom:1px solid #21262d;display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:start}
+.audit-entry:last-child{border-bottom:none}
+.audit-entry-icon{width:32px;height:32px;border-radius:50%;background:rgba(129,140,248,.15);border:1px solid rgba(129,140,248,.3);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;margin-top:2px}
+.audit-entry-body{min-width:0}
+.audit-entry-title{font-size:12px;font-weight:600;color:#e6edf3;margin-bottom:3px}
+.audit-entry-desc{font-size:11px;color:#8b949e;line-height:1.55}
+.audit-entry-meta{font-size:10px;color:#6e7681;text-align:right;white-space:nowrap}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:24px;right:24px;background:#161b22;border:1px solid #30363d;border-radius:10px;padding:14px 18px;font-size:12px;color:#e6edf3;display:flex;align-items:center;gap:10px;box-shadow:0 8px 32px rgba(0,0,0,.5);z-index:200;transform:translateY(30px);opacity:0;transition:all .3s;max-width:360px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{border-color:rgba(74,222,128,.4);background:rgba(74,222,128,.06)}
+.toast.warning{border-color:rgba(251,191,36,.4);background:rgba(251,191,36,.06)}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:#0d1117}
+::-webkit-scrollbar-thumb{background:#30363d;border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:#6e7681}
+</style>
+</head>
+<body>
+
+<!-- ── Top Breadcrumb ────────────────────────────────── -->
+<div class="topbar">
+  <button class="btn-back" onclick="showToast('Returning to Workflow…','⬅','')">← Workflow</button>
+  <span style="color:#30363d;font-size:16px">|</span>
+  <span class="app-name">Apache OFBiz 18.12</span>
+  <span class="badge-enriching">enriching</span>
+  <span style="margin-left:auto;font-size:11px;color:#6e7681">AKG Builder · Step 2 of 10 · Profile &amp; Classify</span>
+</div>
+
+<!-- ── Page Header ── -->
+<div class="page-header" style="padding:20px 24px 16px">
+  <div class="page-title">Profile Review</div>
+  <div class="page-subtitle">Apache OFBiz 18.12 · Statistical profiling, data type detection, null pattern analysis, currency detection, and table role classification · 804 tables</div>
+</div>
+
+<!-- ── Stat Cards (4-column, 2-row grid) ── -->
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-num">804</div>
+    <div class="stat-label">Tables</div>
+    <div class="stat-sub">(410 empty)</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num">5208</div>
+    <div class="stat-label">Columns</div>
+    <div class="stat-sub">(5208 profiled)</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num" style="color:#f87171">0</div>
+    <div class="stat-label">Date Columns</div>
+    <div class="stat-sub">BIGINT epoch detected</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num">1780</div>
+    <div class="stat-label">Low-Cardinality</div>
+    <div class="stat-sub">≤ 50 distinct values</div>
+  </div>
+  <!-- ── NEW: Null Patterns Card ── -->
+  <div class="stat-card" style="border-color:rgba(251,191,36,.3)">
+    <div class="stat-num" style="color:#fbbf24">892</div>
+    <div class="stat-label">Null Patterns</div>
+    <div class="stat-sub">cols with &gt; 20% null rate · 14 critical (&gt; 50%)</div>
+  </div>
+  <!-- ── NEW: Currency Detection Card ── -->
+  <div class="stat-card" style="border-color:rgba(34,211,238,.3)">
+    <div class="stat-num" style="color:#22d3ee">60</div>
+    <div class="stat-label">Currency Cols</div>
+    <div class="stat-sub">5 tables · USD / EUR / GBP detected</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num">1601</div>
+    <div class="stat-label">Primary Keys</div>
+    <div class="stat-sub"></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num">2056</div>
+    <div class="stat-label">Foreign Keys</div>
+    <div class="stat-sub"></div>
+  </div>
+</div>
+
+<!-- ── Distribution Panels Row 1 ── -->
+<div class="dist-row">
+  <div class="dist-card">
+    <div class="dist-title">Data Type Distribution</div>
+    <div class="dist-item"><span class="dist-key">TEXT</span><span class="dist-val">4245</span></div>
+    <div class="dist-item"><span class="dist-key">VARCHAR(255)</span><span class="dist-val">362</span></div>
+    <div class="dist-item"><span class="dist-key">DOUBLE PRECISION</span><span class="dist-val">297</span></div>
+    <div class="dist-item"><span class="dist-key">BIGINT</span><span class="dist-val">175</span></div>
+    <div class="dist-item"><span class="dist-key">NUMERIC(18,6)</span><span class="dist-val">37</span></div>
+    <div class="dist-item"><span class="dist-key">NUMERIC(18,2)</span><span class="dist-val">23</span></div>
+    <div class="dist-item"><span class="dist-key">VARCHAR(60)</span><span class="dist-val">22</span></div>
+    <div class="dist-item"><span class="dist-key">BYTEA</span><span class="dist-val">11</span></div>
+    <div class="dist-item"><span class="dist-key">CHAR(1)</span><span class="dist-val">8</span></div>
+    <div class="dist-item"><span class="dist-key">VARCHAR(100)</span><span class="dist-val">8</span></div>
+  </div>
+  <div class="dist-card">
+    <div class="dist-title">Table Size Distribution</div>
+    <div class="dist-item">
+      <span class="dist-key">empty (0)</span>
+      <div class="bar-row"><div class="bar-bg"><div class="bar-fill" style="width:100%;background:#818cf8"></div></div><span class="dist-val">410</span></div>
+    </div>
+    <div class="dist-item">
+      <span class="dist-key">1–100</span>
+      <div class="bar-row"><div class="bar-bg"><div class="bar-fill" style="width:84%"></div></div><span class="dist-val">346</span></div>
+    </div>
+    <div class="dist-item">
+      <span class="dist-key">101–1K</span>
+      <div class="bar-row"><div class="bar-bg"><div class="bar-fill" style="width:9%"></div></div><span class="dist-val">37</span></div>
+    </div>
+    <div class="dist-item">
+      <span class="dist-key">1K–10K</span>
+      <div class="bar-row"><div class="bar-bg"><div class="bar-fill" style="width:3%"></div></div><span class="dist-val">11</span></div>
+    </div>
+    <div class="dist-item">
+      <span class="dist-key">10K–100K</span>
+      <div class="bar-row"><div class="bar-bg"><div class="bar-fill" style="width:1%"></div></div><span class="dist-val">0</span></div>
+    </div>
+    <div class="dist-item">
+      <span class="dist-key">100K+</span>
+      <div class="bar-row"><div class="bar-bg"><div class="bar-fill" style="width:1%"></div></div><span class="dist-val">0</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── NEW: Distribution Panels Row 2 — Null Patterns + Currency Detection ── -->
+<div class="dist-row">
+
+  <!-- Null Pattern Distribution -->
+  <div class="dist-card" style="border-color:rgba(251,191,36,.25)">
+    <div class="dist-title" style="display:flex;align-items:center;justify-content:space-between">
+      <span>🔍 Null Pattern Distribution</span>
+      <span style="font-size:10px;font-weight:600;color:#fbbf24;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.25);padding:2px 8px;border-radius:10px">5208 cols analysed</span>
+    </div>
+    <div class="dist-item">
+      <span class="dist-key" style="color:#4ade80">No nulls (0%)</span>
+      <div class="bar-row">
+        <div class="bar-bg"><div class="bar-fill" style="width:78%;background:#4ade80"></div></div>
+        <span class="dist-val" style="color:#4ade80">2841</span>
+      </div>
+    </div>
+    <div class="dist-item">
+      <span class="dist-key" style="color:#8b949e">Low null rate (1–5%)</span>
+      <div class="bar-row">
+        <div class="bar-bg"><div class="bar-fill" style="width:27%;background:#8b949e"></div></div>
+        <span class="dist-val">688</span>
+      </div>
+    </div>
+    <div class="dist-item">
+      <span class="dist-key" style="color:#fbbf24">Moderate (5–20%)</span>
+      <div class="bar-row">
+        <div class="bar-bg"><div class="bar-fill" style="width:22%;background:#fbbf24"></div></div>
+        <span class="dist-val" style="color:#fbbf24">567</span>
+      </div>
+    </div>
+    <div class="dist-item">
+      <span class="dist-key" style="color:#f87171">High null rate (20–50%)</span>
+      <div class="bar-row">
+        <div class="bar-bg"><div class="bar-fill" style="width:20%;background:#f87171"></div></div>
+        <span class="dist-val" style="color:#f87171">325</span>
+      </div>
+    </div>
+    <div class="dist-item">
+      <span class="dist-key" style="color:#ef4444">Critical (&gt; 50% — possible sparse col)</span>
+      <div class="bar-row">
+        <div class="bar-bg"><div class="bar-fill" style="width:2%;background:#ef4444"></div></div>
+        <span class="dist-val" style="color:#ef4444">14</span>
+      </div>
+    </div>
+    <div class="dist-item">
+      <span class="dist-key" style="color:#6e7681">Sentinel nulls detected</span>
+      <div class="bar-row">
+        <div class="bar-bg"><div class="bar-fill" style="width:11%;background:#6e7681"></div></div>
+        <span class="dist-val">288</span>
+      </div>
+    </div>
+    <div style="margin-top:10px;padding-top:8px;border-top:1px solid #21262d;font-size:10px;color:#6e7681">
+      ⚠ Sentinel nulls: empty string (''), 'N/A', 'NULL' literal, '0' placeholder patterns detected and flagged separately from true nulls.
+    </div>
+  </div>
+
+  <!-- Currency Detection Distribution -->
+  <div class="dist-card" style="border-color:rgba(34,211,238,.25)">
+    <div class="dist-title" style="display:flex;align-items:center;justify-content:space-between">
+      <span>💱 Currency Detection</span>
+      <span style="font-size:10px;font-weight:600;color:#22d3ee;background:rgba(34,211,238,.1);border:1px solid rgba(34,211,238,.25);padding:2px 8px;border-radius:10px">60 cols · 5 tables</span>
+    </div>
+    <div class="dist-item">
+      <span class="dist-key" style="color:#22d3ee">USD — US Dollar</span>
+      <div class="bar-row">
+        <div class="bar-bg"><div class="bar-fill" style="width:100%;background:#22d3ee"></div></div>
+        <span class="dist-val" style="color:#22d3ee">34</span>
+      </div>
+    </div>
+    <div class="dist-item">
+      <span class="dist-key" style="color:#818cf8">EUR — Euro</span>
+      <div class="bar-row">
+        <div class="bar-bg"><div class="bar-fill" style="width:47%;background:#818cf8"></div></div>
+        <span class="dist-val" style="color:#818cf8">16</span>
+      </div>
+    </div>
+    <div class="dist-item">
+      <span class="dist-key" style="color:#4ade80">GBP — British Pound</span>
+      <div class="bar-row">
+        <div class="bar-bg"><div class="bar-fill" style="width:15%;background:#4ade80"></div></div>
+        <span class="dist-val" style="color:#4ade80">5</span>
+      </div>
+    </div>
+    <div class="dist-item">
+      <span class="dist-key" style="color:#fbbf24">Multi-currency columns</span>
+      <div class="bar-row">
+        <div class="bar-bg"><div class="bar-fill" style="width:15%;background:#fbbf24"></div></div>
+        <span class="dist-val" style="color:#fbbf24">5</span>
+      </div>
+    </div>
+    <div class="dist-item">
+      <span class="dist-key" style="color:#6e7681">No currency detected</span>
+      <div class="bar-row">
+        <div class="bar-bg"><div class="bar-fill" style="width:90%;background:#30363d"></div></div>
+        <span class="dist-val">5148</span>
+      </div>
+    </div>
+    <div style="margin-top:10px;padding:8px 10px;border-top:1px solid #21262d;border-radius:0 0 6px 6px">
+      <div style="font-size:11px;font-weight:700;color:#e6edf3;margin-bottom:6px">Detection Method</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+        <div style="font-size:10px;color:#8b949e;background:#0d1117;padding:5px 8px;border-radius:5px;border:1px solid #30363d">
+          <span style="color:#22d3ee;font-weight:700">Symbol scan</span><br>$, €, £, ¥, ₹ in values
+        </div>
+        <div style="font-size:10px;color:#8b949e;background:#0d1117;padding:5px 8px;border-radius:5px;border:1px solid #30363d">
+          <span style="color:#22d3ee;font-weight:700">ISO code match</span><br>USD/EUR/GBP string patterns
+        </div>
+        <div style="font-size:10px;color:#8b949e;background:#0d1117;padding:5px 8px;border-radius:5px;border:1px solid #30363d">
+          <span style="color:#22d3ee;font-weight:700">Column naming</span><br>_AMOUNT, _PRICE, _RATE suffix
+        </div>
+        <div style="font-size:10px;color:#8b949e;background:#0d1117;padding:5px 8px;border-radius:5px;border:1px solid #30363d">
+          <span style="color:#22d3ee;font-weight:700">Companion col</span><br>CURRENCY_UOM_ID adjacency
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── AC-4: Progression Gate Banner ── -->
+<div class="gate-banner" id="gate-banner">
+  <div class="gate-left">
+    <div class="gate-icon">🔒</div>
+    <div>
+      <div class="gate-title" id="gate-title">2 tables require a review decision before proceeding</div>
+      <div class="gate-desc">Tables with confidence &lt; 65% must be explicitly classified before enrichment can begin. Use the <strong style="color:#e6edf3">Override</strong> button to assign a role and enter your reasoning.</div>
+    </div>
+  </div>
+  <div class="gate-right">
+    <span id="gate-count-badge" style="font-size:11px;background:rgba(248,113,113,.12);color:#f87171;border:1px solid rgba(248,113,113,.3);padding:3px 10px;border-radius:20px;font-weight:700">2 pending</span>
+    <button class="btn-proceed" id="btn-proceed" disabled>🚀 Proceed to Enrich</button>
+  </div>
+</div>
+
+<!-- ── AC-4: Bulk Exclusion Bar ── -->
+<div class="bulk-bar" id="bulk-bar">
+  <div class="bulk-info">
+    <div>
+      <div class="bulk-count">🤖 3 System/Excludable tables auto-proposed for exclusion (≥ 65% confidence)</div>
+      <div class="bulk-desc">FND_COLUMNS (98%) · OrderRole (82%) · EnumerationType (72%) — Confirm all in one action or review individually</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:8px">
+    <button class="btn-bulk-confirm" onclick="confirmAllExclusions()">✓ Confirm All Exclusions</button>
+    <button class="btn-bulk-dismiss" onclick="dismissBulkBar()">Dismiss</button>
+  </div>
+</div>
+
+<!-- ── Confidence + Null Pattern Legend ── -->
+<div class="legend-bar">
+  <span class="legend-title">Confidence:</span>
+  <div class="legend-item"><div class="legend-dot green"></div>≥ 80% High (auto-confirmed)</div>
+  <div class="legend-item"><div class="legend-dot amber"></div>65–79% Medium (overridable)</div>
+  <div class="legend-item"><div class="legend-dot red"></div>&lt; 65% Low — ⚑ Review Required</div>
+  <div class="legend-sep"></div>
+  <span class="legend-title">Null Rate:</span>
+  <div class="legend-item"><div class="legend-dot green"></div>&lt; 5% Low</div>
+  <div class="legend-item"><div class="legend-dot amber"></div>5–20% Moderate</div>
+  <div class="legend-item"><div class="legend-dot red"></div>&gt; 20% High</div>
+  <div class="legend-sep"></div>
+  <span class="legend-title">Currency:</span>
+  <div class="legend-item"><div class="legend-dot cyan"></div>Detected</div>
+  <div style="margin-left:auto;display:flex;gap:6px">
+    <button class="audit-btn" onclick="toggleAuditLog()" id="audit-toggle-btn">📋 Audit Log <span id="audit-count-badge" style="background:#818cf8;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;margin-left:2px">0</span></button>
+  </div>
+</div>
+
+<!-- ── Audit Log Panel ── -->
+<div class="audit-panel" id="audit-panel">
+  <div class="audit-panel-header">
+    <div class="audit-panel-title">📋 Override Audit Log <span id="audit-total" style="font-size:11px;color:#8b949e;font-weight:400">0 entries</span></div>
+    <button class="audit-panel-close" onclick="toggleAuditLog()">✕</button>
+  </div>
+  <div id="audit-log-entries">
+    <div style="padding:20px;text-align:center;color:#6e7681;font-size:12px">No overrides recorded yet. Override any classification to begin the audit trail.</div>
+  </div>
+</div>
+
+<!-- ── Search + Table ── -->
+<div class="table-section">
+  <div style="background:#161b22;border:1px solid #30363d;border-radius:10px 10px 0 0;padding:12px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #30363d;flex-wrap:wrap">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-box" type="text" placeholder="Search tables…" oninput="filterTable(this.value)" id="search-box"/>
+    </div>
+    <div style="display:flex;gap:8px;margin-left:8px;flex-wrap:wrap">
+      <button onclick="filterRole('all')" id="filt-all" style="background:#818cf8;border:1px solid #6e76ad;color:#fff;padding:5px 12px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">All</button>
+      <button onclick="filterRole('Business Data')" id="filt-bd" style="background:transparent;border:1px solid rgba(74,222,128,.3);color:#4ade80;padding:5px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">Business Data</button>
+      <button onclick="filterRole('Enrichment Source')" id="filt-es" style="background:transparent;border:1px solid rgba(34,211,238,.25);color:#22d3ee;padding:5px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">Enrichment Source</button>
+      <button onclick="filterRole('System/Excludable')" id="filt-sx" style="background:transparent;border:1px solid rgba(139,92,246,.3);color:#a78bfa;padding:5px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">System/Excludable</button>
+      <button onclick="filterRole('Review Required')" id="filt-rr" style="background:transparent;border:1px solid rgba(248,113,113,.3);color:#f87171;padding:5px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">⚑ Review Required</button>
+      <button onclick="filterRole('High Null')" id="filt-hn" style="background:transparent;border:1px solid rgba(251,191,36,.3);color:#fbbf24;padding:5px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">⚠ High Null</button>
+      <button onclick="filterRole('Currency')" id="filt-cy" style="background:transparent;border:1px solid rgba(34,211,238,.3);color:#22d3ee;padding:5px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer">💱 Currency</button>
+    </div>
+    <span class="table-count" id="table-count">804 of 804 tables</span>
+  </div>
+  <div class="tbl-wrap" style="max-height:480px;overflow-y:auto">
+    <table>
+      <thead>
+        <tr>
+          <th onclick="sortBy('name')">Table <span class="sort-ico">↕</span></th>
+          <th class="num" onclick="sortBy('rows')">Rows <span class="sort-ico">↕</span></th>
+          <th class="num" onclick="sortBy('cols')">Columns <span class="sort-ico">↕</span></th>
+          <th class="num">Profiled</th>
+          <th class="num">Date</th>
+          <th class="num">Low-Card</th>
+          <th onclick="sortBy('nullPct')" title="Max null % across columns in this table">Null % <span class="sort-ico">↕</span></th>
+          <th title="Currency codes detected in value-level scan">Currency</th>
+          <th>Role</th>
+          <th>Confidence</th>
+          <th style="text-align:center">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ── Override Modal ── -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOnBg(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div class="modal-title">Override Classification — <span id="modal-table-name" style="color:#818cf8"></span></div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Original Classification -->
+      <div class="modal-section">
+        <div class="modal-section-title">Original Classification (Machine-Generated)</div>
+        <div class="original-box">
+          <div class="orig-item"><div class="orig-lbl">Role</div><div class="orig-val" id="orig-role">—</div></div>
+          <div class="orig-item"><div class="orig-lbl">Confidence</div><div class="orig-val" id="orig-conf">—</div></div>
+          <div class="orig-item"><div class="orig-lbl">Builder</div><div class="orig-val">anika.sharma@solix.com</div></div>
+        </div>
+      </div>
+
+      <!-- Profiling Signals (read-only) -->
+      <div class="modal-section">
+        <div class="modal-section-title">Profiling Signals — Null Patterns &amp; Currency</div>
+        <div class="signal-inline" id="modal-signals">
+          <div class="signal-inline-item"><div class="signal-inline-lbl">Max Null %</div><div class="signal-inline-val" id="signal-null-pct">—</div></div>
+          <div class="signal-inline-item"><div class="signal-inline-lbl">Null Cols (&gt;20%)</div><div class="signal-inline-val" id="signal-null-cols">—</div></div>
+          <div class="signal-inline-item"><div class="signal-inline-lbl">Currency Detected</div><div class="signal-inline-val" id="signal-currency">—</div></div>
+          <div class="signal-inline-item"><div class="signal-inline-lbl">Sentinel Nulls</div><div class="signal-inline-val" id="signal-sentinel">—</div></div>
+        </div>
+      </div>
+
+      <!-- Role Override -->
+      <div class="section-divider"><span class="section-divider-label">Classification Overrides</span></div>
+      <div class="form-group">
+        <label class="form-label">New Table Role <span class="req">*</span></label>
+        <select class="form-select" id="override-role" onchange="updateAuditPreview()">
+          <option value="">— Select new role —</option>
+          <option value="Business Data">Business Data — Core transactional or master entity table</option>
+          <option value="Enrichment Source">Enrichment Source — Lookup / reference / code table</option>
+          <option value="System/Excludable">System / Excludable — Internal system, audit log, or interface table</option>
+        </select>
+      </div>
+
+      <!-- Temporal Sub-classification -->
+      <div class="form-group">
+        <label class="form-label">Temporal Column Sub-classification <span class="opt">(if applicable)</span></label>
+        <select class="form-select" id="override-temporal" onchange="updateAuditPreview()">
+          <option value="Not Temporal">Not Temporal — No date/time columns identified</option>
+          <option value="Business Temporal">Business Temporal — Dates used in business logic (INVOICE_DATE, ORDER_DATE)</option>
+          <option value="Audit Temporal">Audit Temporal — Row metadata dates (CREATION_DATE, LAST_UPDATE_DATE) — exclude from graph</option>
+        </select>
+      </div>
+
+      <!-- ── NEW: Null Pattern Override ── -->
+      <div class="section-divider"><span class="section-divider-label">Null Pattern Override</span></div>
+      <div class="form-group">
+        <label class="form-label">Null Handling Classification <span class="opt">(if applicable)</span>
+          <span style="margin-left:6px;font-size:10px;font-weight:600;padding:1px 7px;border-radius:10px;background:rgba(251,191,36,.1);color:#fbbf24;border:1px solid rgba(251,191,36,.2)">NEW</span>
+        </label>
+        <select class="form-select" id="override-null" onchange="updateAuditPreview()">
+          <option value="Not Assessed">Not Assessed — Default / no override</option>
+          <option value="Acceptable Nulls">Acceptable Nulls — Business-optional fields; nulls expected and valid</option>
+          <option value="Meaningful Nulls">Meaningful Nulls — Null = unknown / not applicable; carry semantic meaning</option>
+          <option value="Sentinel Nulls">Sentinel Nulls — Empty string, 'N/A', or '0' used as null placeholder</option>
+          <option value="Data Quality Issue">Data Quality Issue — Unexpected null rate; flag for data quality remediation</option>
+          <option value="Sparse Column">Sparse Column — &gt; 50% null; evaluate column utility before enrichment</option>
+        </select>
+      </div>
+
+      <!-- ── NEW: Currency Override ── -->
+      <div class="section-divider"><span class="section-divider-label">Currency Detection Override</span></div>
+      <div class="form-group">
+        <label class="form-label">Currency Classification <span class="opt">(if applicable)</span>
+          <span style="margin-left:6px;font-size:10px;font-weight:600;padding:1px 7px;border-radius:10px;background:rgba(34,211,238,.1);color:#22d3ee;border:1px solid rgba(34,211,238,.2)">NEW</span>
+        </label>
+        <select class="form-select" id="override-currency" onchange="updateAuditPreview()">
+          <option value="Not Applicable">Not Applicable — No monetary amounts in this table</option>
+          <option value="Confirmed USD">Confirmed USD — US Dollar (verified)</option>
+          <option value="Confirmed EUR">Confirmed EUR — Euro (verified)</option>
+          <option value="Confirmed GBP">Confirmed GBP — British Pound (verified)</option>
+          <option value="Confirmed Multi-Currency">Confirmed Multi-Currency — Multiple currencies present; requires currency_uom_id join</option>
+          <option value="System-Detected Correct">System-Detected Correct — Auto-detected currency is accurate; no change needed</option>
+          <option value="Misdetected — Override">Misdetected — Override — System detection incorrect; specify correct currency above</option>
+          <option value="Unknown Currency">Unknown Currency — Monetary values present but currency undetermined</option>
+        </select>
+      </div>
+
+      <!-- Mandatory Reasoning -->
+      <div class="section-divider"><span class="section-divider-label">Justification</span></div>
+      <div class="form-group">
+        <label class="form-label">Reasoning / Justification <span class="req">*</span> <span style="font-weight:400;color:#6e7681">(min. 20 characters)</span></label>
+        <textarea class="form-textarea" id="override-reason" placeholder="Explain why you are overriding the machine classification. Include null pattern rationale and currency determination if applicable. This note will be visible to all team members with pipeline access." oninput="updateAuditPreview();updateCharCount()" maxlength="500"></textarea>
+        <div class="char-count" id="char-count">0 / 500</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- Audit Preview -->
+      <div class="modal-section">
+        <div class="modal-section-title">Audit Log Preview — What will be recorded</div>
+        <div class="audit-preview" id="audit-preview">
+          Select a role and enter your reasoning to see the audit log entry preview.
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-confirm" id="btn-confirm-override" onclick="applyOverride()" disabled>Apply Override</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Toast ── -->
+<div class="toast" id="toast">
+  <span id="toast-icon">✓</span>
+  <span id="toast-msg">Action completed.</span>
+</div>
+
+<script>
+// ── DATA ───────────────────────────────────────────────────────────────────
+// nullPct: max null % across any column in that table
+// nullCols: number of columns with >20% null rate
+// currency: system-detected currency ('—' = none detected)
+// sentinelNulls: whether sentinel null patterns (empty string, 'N/A', '0') were detected
+const TABLES = [
+  {id:1,  name:'OrderItem',          rows:4475,   cols:48,  profiled:48,  date:0, lowcard:10, role:'Business Data',      conf:97, confirmed:false, excluded:false, nullPct:8,  nullCols:4,  currency:'Multi (USD/EUR)',      sentinelNulls:true},
+  {id:2,  name:'AcctgTransEntry',    rows:4070,   cols:25,  profiled:25,  date:0, lowcard:12, role:'Business Data',      conf:89, confirmed:false, excluded:false, nullPct:12, nullCols:3,  currency:'USD',                  sentinelNulls:false},
+  {id:3,  name:'InvoiceItem',        rows:2775,   cols:19,  profiled:19,  date:0, lowcard:13, role:'Business Data',      conf:92, confirmed:false, excluded:false, nullPct:5,  nullCols:1,  currency:'Multi (USD/EUR/GBP)',   sentinelNulls:false},
+  {id:4,  name:'AcctgTrans',         rows:2029,   cols:28,  profiled:28,  date:0, lowcard:9,  role:'Business Data',      conf:85, confirmed:false, excluded:false, nullPct:18, nullCols:5,  currency:'USD',                  sentinelNulls:true},
+  {id:5,  name:'Geo',                rows:1773,   cols:7,   profiled:7,   date:0, lowcard:1,  role:'Enrichment Source',  conf:91, confirmed:false, excluded:false, nullPct:3,  nullCols:0,  currency:'—',                    sentinelNulls:false},
+  {id:6,  name:'GeoAssoc',           rows:1606,   cols:3,   profiled:3,   date:0, lowcard:1,  role:'Business Data',      conf:68, confirmed:false, excluded:false, nullPct:22, nullCols:1,  currency:'—',                    sentinelNulls:false},
+  {id:7,  name:'ContactMech',        rows:3241,   cols:12,  profiled:12,  date:0, lowcard:4,  role:'Business Data',      conf:88, confirmed:false, excluded:false, nullPct:31, nullCols:4,  currency:'—',                    sentinelNulls:true},
+  {id:8,  name:'OrderStatus',        rows:1027,   cols:8,   profiled:8,   date:0, lowcard:6,  role:'Enrichment Source',  conf:94, confirmed:false, excluded:false, nullPct:6,  nullCols:0,  currency:'—',                    sentinelNulls:false},
+  {id:9,  name:'OrderRole',          rows:1008,   cols:4,   profiled:4,   date:0, lowcard:3,  role:'System/Excludable',  conf:82, confirmed:false, excluded:false, autoProposed:true, nullPct:0, nullCols:0, currency:'—',   sentinelNulls:false},
+  {id:10, name:'WorkEffort',         rows:892,    cols:32,  profiled:32,  date:0, lowcard:8,  role:'Business Data',      conf:73, confirmed:false, excluded:false, nullPct:27, nullCols:9,  currency:'USD',                  sentinelNulls:true},
+  {id:11, name:'FND_LOOKUP_VALUES',  rows:8241,   cols:37,  profiled:37,  date:0, lowcard:16, role:'Enrichment Source',  conf:87, confirmed:false, excluded:false, nullPct:14, nullCols:5,  currency:'—',                    sentinelNulls:false},
+  {id:12, name:'Enumeration',        rows:445,    cols:5,   profiled:5,   date:0, lowcard:5,  role:'Enrichment Source',  conf:96, confirmed:false, excluded:false, nullPct:2,  nullCols:0,  currency:'—',                    sentinelNulls:false},
+  {id:13, name:'EnumerationType',    rows:12,     cols:3,   profiled:3,   date:0, lowcard:3,  role:'System/Excludable',  conf:72, confirmed:false, excluded:false, autoProposed:true, nullPct:0, nullCols:0, currency:'—',   sentinelNulls:false},
+  {id:14, name:'FND_COLUMNS',        rows:651613, cols:27,  profiled:27,  date:0, lowcard:9,  role:'System/Excludable',  conf:98, confirmed:false, excluded:false, autoProposed:true, nullPct:7, nullCols:2, currency:'—',   sentinelNulls:false},
+  {id:15, name:'PartyRelationship',  rows:2108,   cols:15,  profiled:15,  date:0, lowcard:5,  role:'Business Data',      conf:58, confirmed:false, excluded:false, nullPct:35, nullCols:5,  currency:'—',                    sentinelNulls:true},
+  {id:16, name:'ProductAssoc',       rows:1344,   cols:9,   profiled:9,   date:0, lowcard:2,  role:'System/Excludable',  conf:61, confirmed:false, excluded:false, nullPct:19, nullCols:2,  currency:'—',                    sentinelNulls:false},
+  {id:17, name:'ShipmentItem',       rows:1177,   cols:11,  profiled:11,  date:0, lowcard:3,  role:'Business Data',      conf:83, confirmed:false, excluded:false, nullPct:9,  nullCols:1,  currency:'USD',                  sentinelNulls:false},
+  {id:18, name:'InvoiceContactMech', rows:984,    cols:6,   profiled:6,   date:0, lowcard:2,  role:'Enrichment Source',  conf:79, confirmed:false, excluded:false, nullPct:4,  nullCols:0,  currency:'—',                    sentinelNulls:false},
+  {id:19, name:'Party',              rows:5621,   cols:22,  profiled:22,  date:0, lowcard:7,  role:'Business Data',      conf:94, confirmed:false, excluded:false, nullPct:16, nullCols:4,  currency:'—',                    sentinelNulls:true},
+  {id:20, name:'PartyTypeAttr',      rows:88,     cols:4,   profiled:4,   date:0, lowcard:4,  role:'System/Excludable',  conf:86, confirmed:false, excluded:false, autoProposed:true, nullPct:0, nullCols:0, currency:'—',   sentinelNulls:false},
+];
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+let currentFilter = 'all';
+let searchQuery   = '';
+let sortField     = 'rows';
+let sortDir       = -1;
+let modalTableId  = null;
+let auditLog      = [];
+let expandedRows  = new Set();
+
+// ── HELPERS ─────────────────────────────────────────────────────────────────
+function nullPillClass(pct) {
+  if(pct === 0)   return 'null-none';
+  if(pct < 5)     return 'null-low';
+  if(pct <= 20)   return 'null-med';
+  return 'null-high';
+}
+function nullPillLabel(pct) {
+  if(pct === 0)  return '—';
+  return pct + '%';
+}
+function currencyBadgeClass(c) {
+  if(c === '—') return 'currency-none';
+  if(c.startsWith('Multi')) return 'currency-multi';
+  return 'currency-detected';
+}
+function currencyIcon(c) {
+  if(c === '—') return '';
+  if(c.startsWith('Multi')) return '💱 ';
+  return '$ ';
+}
+
+// ── RENDER ─────────────────────────────────────────────────────────────────
+function getVisible() {
+  let data = [...TABLES];
+  if(searchQuery) data = data.filter(t => t.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  if(currentFilter === 'Business Data')      data = data.filter(t => t.role === 'Business Data');
+  if(currentFilter === 'Enrichment Source')  data = data.filter(t => t.role === 'Enrichment Source');
+  if(currentFilter === 'System/Excludable')  data = data.filter(t => t.role === 'System/Excludable');
+  if(currentFilter === 'Review Required')    data = data.filter(t => t.conf < 65);
+  if(currentFilter === 'High Null')          data = data.filter(t => t.nullPct > 20);
+  if(currentFilter === 'Currency')           data = data.filter(t => t.currency !== '—');
+  data.sort((a,b) => {
+    const av = sortField==='name' ? a.name : a[sortField];
+    const bv = sortField==='name' ? b.name : b[sortField];
+    return av < bv ? sortDir : av > bv ? -sortDir : 0;
+  });
+  return data;
+}
+
+function confClass(c) { return c >= 80 ? 'conf-green' : c >= 65 ? 'conf-amber' : 'conf-red'; }
+function confBarColor(c) { return c >= 80 ? '#4ade80' : c >= 65 ? '#fbbf24' : '#f87171'; }
+
+function roleBadge(t) {
+  if(t.conf < 65) return '<span class="role-badge role-review">⚑ Review Required</span>';
+  if(t.role === 'Business Data')     return '<span class="role-badge role-business">Business Data</span>';
+  if(t.role === 'Enrichment Source') return '<span class="role-badge role-enrichment">Enrichment Source</span>';
+  if(t.role === 'System/Excludable') return '<span class="role-badge role-system">System / Excludable</span>';
+  return '';
+}
+
+function actionCell(t) {
+  if(t.excluded && t.confirmed) {
+    return '<span class="confirmed-chip">✓ Excluded</span>';
+  }
+  if(t.autoProposed && !t.confirmed && !t.excluded && t.conf >= 65) {
+    return `<button class="btn-confirm-excl" onclick="confirmSingle(${t.id})">Confirm Excl.</button>
+            <button class="btn-override" style="margin-top:4px" onclick="openModal(${t.id})">Override</button>`;
+  }
+  return `<button class="btn-override" onclick="openModal(${t.id})">Override</button>`;
+}
+
+function renderTable() {
+  const data = getVisible();
+  document.getElementById('table-count').textContent = data.length + ' of 804 tables';
+  const tbody = document.getElementById('table-body');
+  tbody.innerHTML = '';
+
+  data.forEach(t => {
+    const reviewRequired = t.conf < 65;
+    const excluded = t.excluded && t.confirmed;
+    const highNull = t.nullPct > 20;
+    const trClass = reviewRequired ? 'review-required' : (t.autoProposed && !t.confirmed ? 'excluded-proposed' : '');
+
+    // Null pill
+    const nullCls = nullPillClass(t.nullPct);
+    const nullLbl = nullPillLabel(t.nullPct);
+    const sentinelTag = t.sentinelNulls
+      ? '<span style="font-size:9px;color:#fbbf24;margin-left:3px" title="Sentinel nulls detected (empty string / N/A / 0 placeholder)">⚠S</span>'
+      : '';
+
+    // Currency badge
+    const currCls = currencyBadgeClass(t.currency);
+    const currIcon = currencyIcon(t.currency);
+    const currLabel = t.currency === '—' ? '—' : t.currency;
+
+    // Main row
+    const tr = document.createElement('tr');
+    tr.className = trClass;
+    tr.id = 'row-' + t.id;
+    tr.innerHTML = `
+      <td>
+        <span class="expand-arrow ${expandedRows.has(t.id)?'open':''}" onclick="toggleExpand(${t.id})" id="arrow-${t.id}">▶</span>
+        <strong>${t.name}</strong>
+        ${reviewRequired ? '<span class="review-flag">⚑ Review Required</span>' : ''}
+        ${excluded ? '<span style="font-size:10px;color:#4ade80;margin-left:6px">✓ Excluded from enrichment</span>' : ''}
+      </td>
+      <td class="num">${t.rows.toLocaleString()}</td>
+      <td class="num">${t.cols}</td>
+      <td class="num">${t.profiled}</td>
+      <td class="num">${t.date}</td>
+      <td class="num">${t.lowcard}</td>
+      <td>
+        <span class="null-pill ${nullCls}">${nullLbl}</span>${sentinelTag}
+        ${highNull ? '<div style="font-size:9px;color:#f87171;margin-top:2px">'+t.nullCols+' col'+(t.nullCols!==1?'s':'')+' &gt;20%</div>' : ''}
+      </td>
+      <td>
+        <span class="currency-badge ${currCls}">${currIcon}${currLabel}</span>
+      </td>
+      <td>${roleBadge(t)}</td>
+      <td>
+        <div class="conf-cell">
+          <span class="conf-pill ${confClass(t.conf)}">${t.conf}%</span>
+          <div class="conf-bar-bg"><div class="conf-bar-fill" style="width:${t.conf}%;background:${confBarColor(t.conf)}"></div></div>
+          ${reviewRequired ? '<span class="review-flag">Blocks pipeline</span>' : ''}
+        </div>
+      </td>
+      <td style="text-align:center">${actionCell(t)}</td>`;
+    tbody.appendChild(tr);
+
+    // Expanded details row
+    if(expandedRows.has(t.id)) {
+      const signals = getSignals(t);
+      const detailTr = document.createElement('tr');
+      detailTr.id = 'expand-' + t.id;
+      detailTr.innerHTML = `<td colspan="11">
+        <div class="expand-content">
+          <div style="font-size:11px;font-weight:700;color:#8b949e;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">Classification Signals — ${t.name}</div>
+          <div class="expand-grid">
+            ${signals.map(s=>`<div class="signal-card ${s.cardClass||''}"><div class="signal-label">${s.label}</div><div class="signal-val">${s.val}</div>${s.sub?`<div class="signal-sub">${s.sub}</div>`:''}</div>`).join('')}
+          </div>
+        </div></td>`;
+      tbody.appendChild(detailTr);
+    }
+  });
+}
+
+function getSignals(t) {
+  // Null pattern signal card class
+  const nullCardClass = t.nullPct > 20 ? 'signal-alert' : (t.nullPct >= 5 ? 'signal-warn' : 'signal-ok');
+  const nullSub = t.nullPct === 0
+    ? 'No nulls detected — clean column coverage'
+    : (t.nullPct > 20
+        ? t.nullCols + ' column(s) exceed 20% null threshold'
+        : 'Within acceptable null range');
+
+  // Sentinel null detail
+  const sentinelDetail = t.sentinelNulls
+    ? 'Sentinel patterns detected (empty string / "N/A" / "0" placeholder)'
+    : 'No sentinel null patterns detected';
+
+  // Currency signal card class
+  const currCardClass = t.currency !== '—' ? 'signal-info' : '';
+  const currVal = t.currency === '—' ? 'Not Detected' : t.currency;
+  const currSub = t.currency === '—'
+    ? 'No $ / € / £ symbols or ISO currency codes found'
+    : (t.currency.startsWith('Multi')
+        ? 'Multi-currency: requires CURRENCY_UOM_ID join for normalization'
+        : 'Single currency detected via value scan + column name heuristic');
+
+  const signals = [
+    {
+      label: 'Row Count',
+      val: t.rows.toLocaleString(),
+      sub: 'Used for size-class classification',
+      cardClass: ''
+    },
+    {
+      label: 'FK Outbound',
+      val: t.id % 3 === 0 ? '0 outbound FK' : (t.id % 3 === 1 ? '3 FK refs' : '7 FK refs'),
+      sub: 'FK pattern influences role',
+      cardClass: ''
+    },
+    {
+      label: '⬜ Null Pattern',
+      val: t.nullPct === 0 ? 'No nulls (0%)' : 'Max ' + t.nullPct + '% null rate',
+      sub: nullSub,
+      cardClass: nullCardClass
+    },
+    {
+      label: '⬜ Sentinel Nulls',
+      val: t.sentinelNulls ? '⚠ Detected' : '✓ None',
+      sub: sentinelDetail,
+      cardClass: t.sentinelNulls ? 'signal-warn' : 'signal-ok'
+    },
+    {
+      label: 'Low-Card Cols',
+      val: t.lowcard + ' columns',
+      sub: 'May indicate reference/enum table',
+      cardClass: ''
+    },
+    {
+      label: 'Date Pattern',
+      val: t.date > 0 ? t.date+' TIMESTAMP cols' : '0 native dates detected',
+      sub: t.date === 0 ? 'BIGINT epoch pattern check applied' : '—',
+      cardClass: ''
+    },
+    {
+      label: '💱 Currency Detection',
+      val: currVal,
+      sub: currSub,
+      cardClass: currCardClass
+    },
+    {
+      label: '💱 Currency Confidence',
+      val: t.currency !== '—' ? '87% — Value scan + naming heuristic' : 'N/A',
+      sub: t.currency !== '—'
+        ? 'Corroborated by CURRENCY_UOM_ID companion column'
+        : 'No monetary column signatures found',
+      cardClass: currCardClass
+    },
+  ];
+  return signals;
+}
+
+// ── INTERACTIONS ───────────────────────────────────────────────────────────
+function toggleExpand(id) {
+  if(expandedRows.has(id)) expandedRows.delete(id);
+  else expandedRows.add(id);
+  renderTable();
+}
+
+function filterTable(q) {
+  searchQuery = q;
+  renderTable();
+}
+
+function filterRole(role) {
+  currentFilter = role;
+  const filterMap = {
+    'all': 'all', 'Business Data': 'bd', 'Enrichment Source': 'es',
+    'System/Excludable': 'sx', 'Review Required': 'rr', 'High Null': 'hn', 'Currency': 'cy'
+  };
+  const colorMap = {
+    'all': '#8b949e', 'bd': '#4ade80', 'es': '#22d3ee', 'sx': '#a78bfa',
+    'rr': '#f87171', 'hn': '#fbbf24', 'cy': '#22d3ee'
+  };
+  const borderMap = {
+    'all': '#30363d', 'bd': 'rgba(74,222,128,.3)', 'es': 'rgba(34,211,238,.25)',
+    'sx': 'rgba(139,92,246,.3)', 'rr': 'rgba(248,113,113,.3)',
+    'hn': 'rgba(251,191,36,.3)', 'cy': 'rgba(34,211,238,.3)'
+  };
+  ['all','bd','es','sx','rr','hn','cy'].forEach(k => {
+    const el = document.getElementById('filt-'+k);
+    if(!el) return;
+    const activeKey = filterMap[role];
+    const isActive = k === activeKey;
+    el.style.background = isActive ? '#818cf8' : 'transparent';
+    el.style.color = isActive ? '#fff' : colorMap[k];
+    el.style.borderColor = isActive ? '#6e76ad' : borderMap[k];
+    el.style.fontWeight = isActive ? '700' : '600';
+  });
+  renderTable();
+}
+
+function sortBy(field) {
+  if(sortField === field) sortDir = -sortDir;
+  else { sortField = field; sortDir = -1; }
+  renderTable();
+}
+
+// ── BULK EXCLUSION ─────────────────────────────────────────────────────────
+function confirmAllExclusions() {
+  const proposed = TABLES.filter(t => t.autoProposed && !t.confirmed && t.conf >= 65);
+  proposed.forEach(t => { t.confirmed = true; t.excluded = true; });
+  addAuditEntry({
+    icon:'🤖',
+    title:'Bulk Exclusion Confirmed',
+    desc:`${proposed.length} System/Excludable tables confirmed for exclusion: ${proposed.map(t=>t.name).join(' · ')}`,
+    user:'anika.sharma@solix.com',
+    timestamp:now()
+  });
+  document.getElementById('bulk-bar').style.display = 'none';
+  checkGate();
+  renderTable();
+  showToast(proposed.length + ' tables confirmed as excluded from enrichment pipeline','✓','success');
+}
+
+function confirmSingle(id) {
+  const t = TABLES.find(x=>x.id===id);
+  if(!t) return;
+  t.confirmed = true; t.excluded = true;
+  addAuditEntry({
+    icon:'✓',
+    title:'Single Exclusion Confirmed — ' + t.name,
+    desc:`Builder confirmed System/Excludable classification (${t.conf}% confidence). Table excluded from enrichment pipeline.`,
+    user:'anika.sharma@solix.com',
+    timestamp:now()
+  });
+  const stillPending = TABLES.filter(x=>x.autoProposed && !x.confirmed && x.conf >= 65);
+  if(stillPending.length === 0) document.getElementById('bulk-bar').style.display = 'none';
+  checkGate();
+  renderTable();
+  showToast(t.name + ' confirmed as excluded','✓','success');
+}
+
+function dismissBulkBar() {
+  document.getElementById('bulk-bar').style.display = 'none';
+}
+
+// ── GATE CHECK ─────────────────────────────────────────────────────────────
+function checkGate() {
+  const pending = TABLES.filter(t => t.conf < 65 && !t.confirmed);
+  const gate = document.getElementById('gate-banner');
+  const btn  = document.getElementById('btn-proceed');
+  const badge = document.getElementById('gate-count-badge');
+  const title = document.getElementById('gate-title');
+  if(pending.length === 0) {
+    gate.className = 'gate-banner resolved';
+    title.textContent = 'All classifications resolved — pipeline ready to proceed';
+    title.style.color = '#4ade80';
+    badge.style.display = 'none';
+    btn.disabled = false;
+    btn.innerHTML = '🚀 Proceed to Enrich';
+    btn.onclick = () => showToast('Enrichment pipeline initiated for 804 tables','🚀','success');
+  } else {
+    gate.className = 'gate-banner';
+    title.textContent = pending.length + (pending.length===1?' table requires':' tables require') + ' a review decision before proceeding';
+    title.style.color = '#f87171';
+    badge.textContent = pending.length + ' pending';
+    badge.style.display = '';
+    btn.disabled = true;
+  }
+}
+
+// ── OVERRIDE MODAL ─────────────────────────────────────────────────────────
+function openModal(id) {
+  const t = TABLES.find(x=>x.id===id);
+  if(!t) return;
+  modalTableId = id;
+  document.getElementById('modal-table-name').textContent = t.name;
+  document.getElementById('orig-role').textContent = t.conf < 65 ? '⚑ Review Required (' + t.role + ')' : t.role;
+  document.getElementById('orig-conf').innerHTML = '<span class="conf-pill '+confClass(t.conf)+'" style="font-size:12px">'+t.conf+'%</span>';
+
+  // Populate profiling signals in modal
+  const npPct = t.nullPct === 0 ? '0% — No nulls' : t.nullPct + '% max';
+  const npCls = t.nullPct > 20 ? 'color:#f87171' : (t.nullPct >= 5 ? 'color:#fbbf24' : 'color:#4ade80');
+  document.getElementById('signal-null-pct').innerHTML = `<span style="${npCls}">${npPct}</span>`;
+  document.getElementById('signal-null-cols').innerHTML = t.nullCols > 0
+    ? `<span style="color:#f87171">${t.nullCols} column${t.nullCols!==1?'s':''}</span>`
+    : '<span style="color:#4ade80">None</span>';
+  const currDisplay = t.currency === '—' ? '<span style="color:#6e7681">Not detected</span>'
+    : `<span style="color:#22d3ee">${t.currency}</span>`;
+  document.getElementById('signal-currency').innerHTML = currDisplay;
+  document.getElementById('signal-sentinel').innerHTML = t.sentinelNulls
+    ? '<span style="color:#fbbf24">⚠ Detected</span>'
+    : '<span style="color:#4ade80">✓ None</span>';
+
+  // Reset form fields
+  document.getElementById('override-role').value = '';
+  document.getElementById('override-temporal').value = 'Not Temporal';
+  document.getElementById('override-null').value = 'Not Assessed';
+  document.getElementById('override-currency').value = t.currency !== '—' ? 'System-Detected Correct' : 'Not Applicable';
+  document.getElementById('override-reason').value = '';
+  document.getElementById('char-count').textContent = '0 / 500';
+  document.getElementById('char-count').className = 'char-count';
+  document.getElementById('btn-confirm-override').disabled = true;
+  document.getElementById('audit-preview').textContent = 'Select a role and enter your reasoning to see the audit log entry preview.';
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  modalTableId = null;
+}
+
+function closeModalOnBg(e) {
+  if(e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
+function updateCharCount() {
+  const v = document.getElementById('override-reason').value;
+  const el = document.getElementById('char-count');
+  el.textContent = v.length + ' / 500';
+  el.className = 'char-count' + (v.length > 400 ? ' warn' : '');
+}
+
+function updateAuditPreview() {
+  const role      = document.getElementById('override-role').value;
+  const temporal  = document.getElementById('override-temporal').value;
+  const nullClass = document.getElementById('override-null').value;
+  const currency  = document.getElementById('override-currency').value;
+  const reason    = document.getElementById('override-reason').value;
+  const t = TABLES.find(x=>x.id===modalTableId);
+  const valid = role && reason.trim().length >= 20;
+  document.getElementById('btn-confirm-override').disabled = !valid;
+
+  if(!role || !reason.trim()) {
+    document.getElementById('audit-preview').textContent = 'Select a role and enter your reasoning to see the audit log entry preview.';
+    return;
+  }
+  document.getElementById('audit-preview').innerHTML =
+    `<strong>Table:</strong> ${t ? t.name : '—'}<br>
+     <strong>Original classification:</strong> ${t ? t.role : '—'} (${t ? t.conf : '—'}% confidence)<br>
+     <strong>Override role:</strong> ${role}<br>
+     <strong>Temporal sub-classification:</strong> ${temporal}<br>
+     <strong>Null pattern classification:</strong> ${nullClass}<br>
+     <strong>Currency classification:</strong> ${currency}<br>
+     <strong>Reasoning:</strong> ${reason || '—'}<br>
+     <strong>Builder:</strong> anika.sharma@solix.com<br>
+     <strong>Timestamp:</strong> ${now()}<br>
+     <em style="color:#6e7681">This entry will be visible to all team members with pipeline access.</em>`;
+}
+
+function applyOverride() {
+  const t = TABLES.find(x=>x.id===modalTableId);
+  if(!t) return;
+  const role      = document.getElementById('override-role').value;
+  const temporal  = document.getElementById('override-temporal').value;
+  const nullClass = document.getElementById('override-null').value;
+  const currency  = document.getElementById('override-currency').value;
+  const reason    = document.getElementById('override-reason').value;
+  if(!role || reason.trim().length < 20) return;
+
+  const origRole = t.role;
+  const origConf = t.conf;
+  t.role      = role;
+  t.conf      = Math.min(t.conf + 15, 99);
+  t.confirmed = true;
+  if(role === 'System/Excludable') { t.excluded = true; t.autoProposed = false; }
+  else { t.excluded = false; t.autoProposed = false; }
+
+  addAuditEntry({
+    icon:'⇄',
+    title:`Override Applied — ${t.name}`,
+    desc:`Original: ${origRole} (${origConf}%) → Override: ${role} · Temporal: ${temporal}<br>Null Pattern: ${nullClass} · Currency: ${currency}<br>Reasoning: "${reason}"`,
+    user:'anika.sharma@solix.com',
+    timestamp:now()
+  });
+
+  closeModal();
+  checkGate();
+  renderTable();
+  showToast('Override applied to ' + t.name + ' — audit log updated','✓','success');
+}
+
+// ── AUDIT LOG ──────────────────────────────────────────────────────────────
+function addAuditEntry(entry) {
+  auditLog.unshift(entry);
+  const badge = document.getElementById('audit-count-badge');
+  badge.textContent = auditLog.length;
+  const container = document.getElementById('audit-log-entries');
+  container.innerHTML = auditLog.map(e=>`
+    <div class="audit-entry">
+      <div class="audit-entry-icon">${e.icon}</div>
+      <div class="audit-entry-body">
+        <div class="audit-entry-title">${e.title}</div>
+        <div class="audit-entry-desc">${e.desc}</div>
+      </div>
+      <div class="audit-entry-meta">${e.user}<br>${e.timestamp}</div>
+    </div>`).join('');
+  document.getElementById('audit-total').textContent = auditLog.length + ' entr' + (auditLog.length===1?'y':'ies');
+}
+
+function toggleAuditLog() {
+  const panel = document.getElementById('audit-panel');
+  panel.classList.toggle('open');
+  document.getElementById('audit-toggle-btn').textContent = panel.classList.contains('open') ? '▲ Audit Log' : '📋 Audit Log';
+  document.getElementById('audit-toggle-btn').innerHTML +=
+    ` <span id="audit-count-badge" style="background:#818cf8;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;margin-left:2px">${auditLog.length}</span>`;
+}
+
+// ── TOAST ──────────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg, icon, type) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-icon').textContent = icon || '✓';
+  document.getElementById('toast-msg').textContent  = msg;
+  t.className = 'toast show ' + (type||'');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>{ t.className='toast'; }, 3500);
+}
+
+// ── UTILS ──────────────────────────────────────────────────────────────────
+function now() {
+  return new Date().toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+
+// ── INIT ───────────────────────────────────────────────────────────────────
+checkGate();
+renderTable();
+</script>
+</body>
+</html>
