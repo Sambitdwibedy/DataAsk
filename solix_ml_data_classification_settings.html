@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solix ML – Data Classification Settings</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f4f6fb; display: flex; height: 100vh; overflow: hidden; }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: 56px; background: #1c2b4b; display: flex; flex-direction: column;
+    align-items: center; padding: 16px 0; gap: 6px; flex-shrink: 0;
+  }
+  .sidebar-icon {
+    width: 38px; height: 38px; border-radius: 8px; display: flex; align-items: center;
+    justify-content: center; cursor: pointer; color: #8ca0c4; transition: background .15s, color .15s;
+  }
+  .sidebar-icon:hover { background: #2d3f6b; color: #fff; }
+  .sidebar-icon.active { background: #2d3f6b; color: #fff; }
+  .sidebar-icon svg { width: 20px; height: 20px; }
+
+  /* ── Main ── */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* ── Top Nav ── */
+  .topnav {
+    height: 56px; background: #fff; border-bottom: 1px solid #e5e9f0;
+    display: flex; align-items: center; padding: 0 24px; gap: 16px; flex-shrink: 0;
+  }
+  .logo { display: flex; align-items: center; gap: 8px; }
+  .logo-icon {
+    width: 36px; height: 36px; background: #c0392b; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; position: relative;
+  }
+  .logo-icon::after {
+    content: ''; position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+    width: 14px; height: 14px; border: 2.5px solid #fff; border-radius: 50%;
+  }
+  .logo-text { font-size: 13px; font-weight: 700; color: #1c2b4b; line-height: 1.2; }
+  .logo-sub { font-size: 9px; color: #7a8cb0; font-weight: 400; display: block; }
+  .search-bar {
+    flex: 1; max-width: 480px; margin: 0 auto;
+    display: flex; align-items: center; background: #f4f6fb; border: 1px solid #e5e9f0;
+    border-radius: 24px; padding: 0 16px; gap: 8px; height: 36px;
+  }
+  .search-bar input { border: none; background: transparent; outline: none; font-size: 13px; color: #666; width: 100%; }
+  .search-bar svg { color: #aab0c0; flex-shrink: 0; }
+  .avatar {
+    width: 34px; height: 34px; background: #1c2b4b; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 13px; font-weight: 600; cursor: pointer; margin-left: auto;
+  }
+
+  /* ── Content Area ── */
+  .content-area { flex: 1; overflow-y: auto; background: #f4f6fb; }
+
+  /* ── Breadcrumb ── */
+  .breadcrumb {
+    display: flex; align-items: center; gap: 8px; padding: 20px 32px 0;
+    font-size: 13px; color: #555;
+  }
+  .breadcrumb .back-btn {
+    display: flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border-radius: 6px; border: 1px solid #d5dae6;
+    background: #fff; cursor: pointer; color: #444;
+  }
+  .breadcrumb .back-btn:hover { background: #eef0f5; }
+  .breadcrumb .sep { color: #aab0c0; }
+  .breadcrumb .current { color: #888; }
+  .breadcrumb .page-title { font-weight: 600; color: #1c2b4b; }
+
+  /* ── Page Card ── */
+  .page-card {
+    margin: 16px 32px 32px; background: #fff; border-radius: 12px;
+    border: 1px solid #e5e9f0; overflow: hidden;
+  }
+
+  /* ── Tabs ── */
+  .tabs {
+    display: flex; border-bottom: 1.5px solid #e5e9f0; padding: 0 28px; background: #fff;
+  }
+  .tab {
+    padding: 16px 20px; font-size: 13.5px; color: #7a8cb0; cursor: pointer;
+    border-bottom: 2.5px solid transparent; margin-bottom: -1.5px; font-weight: 500;
+    white-space: nowrap; transition: color .15s;
+  }
+  .tab:hover { color: #1c2b4b; }
+  .tab.active { color: #1c2b4b; border-bottom-color: #1c2b4b; font-weight: 600; }
+
+  /* ── Tab Body ── */
+  .tab-body { padding: 28px; display: none; }
+  .tab-body.active { display: block; }
+
+  /* ── Section Title ── */
+  .section-title { font-size: 20px; font-weight: 700; color: #1c2b4b; margin-bottom: 20px; }
+  .section-subtitle { font-size: 14px; font-weight: 600; color: #1c2b4b; margin-bottom: 12px; margin-top: 28px; }
+
+  /* ── Checkbox row ── */
+  .checkbox-row { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+  .checkbox-row input[type=checkbox] { width: 16px; height: 16px; accent-color: #1c2b4b; cursor: pointer; }
+  .checkbox-row label { font-size: 13.5px; color: #333; cursor: pointer; }
+
+  /* ── Category Card ── */
+  .category-card-wrap { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .category-card {
+    border: 1.5px solid #d5dae6; border-radius: 10px; padding: 16px 20px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px; flex: 1; background: #fff;
+    transition: border-color .15s;
+  }
+  .category-card:hover { border-color: #9aa8c4; }
+  .field-group label { font-size: 12px; color: #555; margin-bottom: 6px; display: block; font-weight: 500; }
+  .field-group input {
+    width: 100%; border: 1.5px solid #d5dae6; border-radius: 6px;
+    padding: 8px 12px; font-size: 13px; color: #333; outline: none; background: #fff;
+    transition: border-color .15s;
+  }
+  .field-group input:focus { border-color: #1c2b4b; }
+
+  .icon-btn {
+    width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid #c5cad8;
+    background: #fff; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: #6b7a99; font-size: 18px; line-height: 1;
+    transition: background .15s, border-color .15s, color .15s;
+  }
+  .icon-btn:hover { background: #eef0f5; border-color: #9aa8c4; color: #1c2b4b; }
+  .icon-btn.remove:hover { background: #fef2f2; border-color: #fca5a5; color: #dc2626; }
+  .icon-btn.add:hover { background: #f0fdf4; border-color: #86efac; color: #16a34a; }
+
+  .add-row { display: flex; align-items: center; gap: 10px; margin-top: 4px; }
+  .add-row-line { flex: 1; height: 1px; background: #e5e9f0; }
+
+  /* ── Submit Button ── */
+  .submit-btn {
+    margin-top: 24px; background: #1c2b4b; color: #fff; border: none;
+    border-radius: 8px; padding: 10px 28px; font-size: 13px; font-weight: 700;
+    letter-spacing: .5px; cursor: pointer; text-transform: uppercase;
+    transition: background .15s, transform .1s;
+  }
+  .submit-btn:hover { background: #243460; }
+  .submit-btn:active { transform: scale(.98); }
+
+  /* ── Divider ── */
+  .section-divider { border: none; border-top: 1.5px solid #e5e9f0; margin: 32px 0; }
+
+  /* ── Training Upload Section ── */
+  .training-section {
+    background: linear-gradient(135deg, #f0f4ff 0%, #fafbff 100%);
+    border: 1.5px solid #c5d0f0; border-radius: 12px; padding: 24px;
+  }
+  .training-header { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 20px; }
+  .training-icon-wrap {
+    width: 44px; height: 44px; border-radius: 10px; background: #1c2b4b;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .training-icon-wrap svg { color: #fff; width: 22px; height: 22px; }
+  .training-title { font-size: 15px; font-weight: 700; color: #1c2b4b; margin-bottom: 4px; }
+  .training-desc { font-size: 12.5px; color: #5f6e8a; line-height: 1.5; }
+
+  /* Drop Zone */
+  .drop-zone {
+    border: 2px dashed #a8b8d8; border-radius: 10px; background: #fff;
+    padding: 36px 24px; text-align: center; cursor: pointer;
+    transition: border-color .15s, background .15s; position: relative;
+  }
+  .drop-zone:hover, .drop-zone.dragover { border-color: #1c2b4b; background: #f0f4ff; }
+  .drop-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .drop-zone-icon { margin-bottom: 12px; }
+  .drop-zone-icon svg { width: 40px; height: 40px; color: #8a9cc0; }
+  .drop-zone-text { font-size: 14px; font-weight: 600; color: #1c2b4b; margin-bottom: 4px; }
+  .drop-zone-sub { font-size: 12px; color: #7a8cb0; }
+  .drop-zone-sub span { color: #1c2b4b; font-weight: 600; text-decoration: underline; }
+  .file-types { display: flex; gap: 8px; justify-content: center; margin-top: 14px; }
+  .file-type-badge {
+    background: #e8edf8; color: #3d5585; font-size: 11px; font-weight: 700;
+    padding: 3px 10px; border-radius: 4px; letter-spacing: .3px;
+  }
+  .file-size-note { font-size: 11px; color: #9aa8c0; margin-top: 8px; }
+
+  /* File List */
+  .file-list { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .file-item {
+    display: flex; align-items: center; gap: 12px; background: #fff;
+    border: 1px solid #d5dae6; border-radius: 8px; padding: 10px 14px;
+    transition: border-color .15s;
+  }
+  .file-item:hover { border-color: #9aa8c4; }
+  .file-icon {
+    width: 34px; height: 34px; border-radius: 6px; display: flex; align-items: center;
+    justify-content: center; font-size: 10px; font-weight: 800; letter-spacing: .3px; flex-shrink: 0;
+  }
+  .file-icon.xlsx { background: #d1fae5; color: #065f46; }
+  .file-icon.csv { background: #dbeafe; color: #1e40af; }
+  .file-meta { flex: 1; }
+  .file-name { font-size: 13px; font-weight: 600; color: #1c2b4b; }
+  .file-info { font-size: 11.5px; color: #7a8cb0; margin-top: 2px; }
+  .file-info .row-count { color: #059669; font-weight: 600; }
+  .file-status {
+    font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 12px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .file-status.ready { background: #d1fae5; color: #065f46; }
+  .file-status.processing { background: #fef3c7; color: #92400e; }
+  .file-status.error { background: #fee2e2; color: #991b1b; }
+  .file-remove { background: none; border: none; cursor: pointer; color: #9aa8c0; padding: 4px; border-radius: 4px; }
+  .file-remove:hover { color: #dc2626; background: #fef2f2; }
+
+  /* Progress Bar */
+  .progress-wrap { margin-top: 6px; }
+  .progress-bar-bg { height: 4px; background: #e5e9f0; border-radius: 2px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: #1c2b4b; border-radius: 2px; transition: width .4s ease; }
+  .progress-label { font-size: 10.5px; color: #7a8cb0; margin-top: 3px; text-align: right; }
+
+  /* Column Mapping */
+  .mapping-section { margin-top: 20px; }
+  .mapping-title { font-size: 13px; font-weight: 600; color: #1c2b4b; margin-bottom: 12px; }
+  .mapping-grid { display: grid; grid-template-columns: 1fr 24px 1fr; gap: 10px; align-items: center; }
+  .mapping-label { font-size: 11.5px; color: #7a8cb0; font-weight: 500; margin-bottom: 4px; }
+  .mapping-select {
+    width: 100%; border: 1.5px solid #d5dae6; border-radius: 6px; padding: 7px 10px;
+    font-size: 12.5px; color: #333; background: #fff; outline: none; cursor: pointer;
+    transition: border-color .15s;
+  }
+  .mapping-select:focus { border-color: #1c2b4b; }
+  .mapping-arrow { text-align: center; color: #9aa8c0; font-size: 16px; }
+
+  /* Stats Row */
+  .training-stats { display: flex; gap: 16px; margin-top: 20px; flex-wrap: wrap; }
+  .stat-chip {
+    background: #fff; border: 1px solid #d5dae6; border-radius: 8px;
+    padding: 10px 16px; display: flex; flex-direction: column; gap: 2px; min-width: 120px;
+  }
+  .stat-chip-label { font-size: 11px; color: #7a8cb0; font-weight: 500; }
+  .stat-chip-value { font-size: 18px; font-weight: 700; color: #1c2b4b; }
+  .stat-chip-value.green { color: #059669; }
+  .stat-chip-value.amber { color: #d97706; }
+
+  /* Action row */
+  .training-actions { display: flex; gap: 12px; margin-top: 24px; align-items: center; }
+  .btn-primary {
+    background: #1c2b4b; color: #fff; border: none; border-radius: 8px;
+    padding: 10px 24px; font-size: 13px; font-weight: 700; cursor: pointer;
+    letter-spacing: .4px; text-transform: uppercase; transition: background .15s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .btn-primary:hover { background: #243460; }
+  .btn-primary:disabled { background: #9aa8c0; cursor: not-allowed; }
+  .btn-secondary {
+    background: #fff; color: #1c2b4b; border: 1.5px solid #c5cad8; border-radius: 8px;
+    padding: 9px 20px; font-size: 13px; font-weight: 600; cursor: pointer;
+    transition: background .15s, border-color .15s;
+  }
+  .btn-secondary:hover { background: #f0f4ff; border-color: #9aa8c4; }
+  .hint-text { font-size: 12px; color: #9aa8c0; margin-left: 4px; }
+
+  /* Validation Error */
+  .inline-error {
+    display: none; align-items: center; gap: 6px; margin-top: 8px;
+    background: #fef2f2; border: 1px solid #fca5a5; border-radius: 6px;
+    padding: 8px 12px; font-size: 12px; color: #dc2626;
+  }
+  .inline-error.show { display: flex; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 28px; right: 28px; background: #1c2b4b; color: #fff;
+    padding: 12px 20px; border-radius: 10px; font-size: 13px; font-weight: 500;
+    display: flex; align-items: center; gap: 10px; box-shadow: 0 8px 24px rgba(28,43,75,.25);
+    transform: translateY(80px); opacity: 0; transition: transform .3s ease, opacity .3s ease;
+    z-index: 999;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { background: #065f46; }
+  .toast.error { background: #991b1b; }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div style="margin-bottom:12px;">
+    <div class="logo-icon"></div>
+  </div>
+  <div class="sidebar-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+  </div>
+  <div class="sidebar-icon active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+  </div>
+  <div class="sidebar-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+  </div>
+  <div class="sidebar-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+  </div>
+  <div class="sidebar-icon" style="margin-top:auto;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
+  </div>
+  <div class="sidebar-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+  </div>
+</div>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- Top Nav -->
+  <div class="topnav">
+    <div class="logo">
+      <div class="logo-icon"></div>
+      <div class="logo-text">SOLIX<span class="logo-sub">Empowering the Data-driven Enterprise</span></div>
+    </div>
+    <div class="search-bar">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" placeholder="Search anything...">
+    </div>
+    <div class="avatar">S</div>
+  </div>
+
+  <!-- Content -->
+  <div class="content-area">
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+      <button class="back-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <span class="page-title">Solix ML</span>
+      <span class="sep">/</span>
+      <span class="current">Data Classification Settings</span>
+    </div>
+
+    <!-- Page Card -->
+    <div class="page-card">
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab(this,'categories')">Categories</div>
+        <div class="tab" onclick="switchTab(this,'model')">Model</div>
+        <div class="tab" onclick="switchTab(this,'evaluation')">Evaluation</div>
+        <div class="tab" onclick="switchTab(this,'runs')">Runs</div>
+        <div class="tab" onclick="switchTab(this,'sensitive')">Sensitive Categories</div>
+      </div>
+
+      <!-- ══════════════ CATEGORIES TAB ══════════════ -->
+      <div class="tab-body active" id="tab-categories">
+
+        <div class="section-title">Categories</div>
+
+        <div class="checkbox-row">
+          <input type="checkbox" id="llmCheck" checked>
+          <label for="llmCheck">Use LLM Generated Categories</label>
+        </div>
+
+        <!-- Category rows -->
+        <div id="categoryRows">
+          <div class="category-card-wrap">
+            <div class="category-card">
+              <div class="field-group">
+                <label>Category Name</label>
+                <input type="text" placeholder="">
+              </div>
+              <div class="field-group">
+                <label>Category Description</label>
+                <input type="text" placeholder="">
+              </div>
+            </div>
+            <button class="icon-btn remove" onclick="removeRow(this)" title="Remove">−</button>
+          </div>
+        </div>
+
+        <div class="add-row">
+          <div class="add-row-line"></div>
+          <button class="icon-btn add" onclick="addRow()" title="Add category">+</button>
+          <div class="add-row-line"></div>
+        </div>
+
+        <button class="submit-btn" onclick="handleCategoriesSubmit()">SUBMIT</button>
+
+        <!-- ── Divider ── -->
+        <hr class="section-divider">
+
+        <!-- ══ TRAINING DATA UPLOAD SECTION ══ -->
+        <div class="training-section">
+
+          <div class="training-header">
+            <div class="training-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+              </svg>
+            </div>
+            <div>
+              <div class="training-title">Pre-Classified Training Data</div>
+              <div class="training-desc">
+                Upload XLS or CSV files containing sample documents that are already classified.
+                These will be used to fine-tune the LLM and generate improved classification results
+                tailored to your data domain.
+              </div>
+            </div>
+          </div>
+
+          <!-- Stats -->
+          <div class="training-stats" id="trainingStats" style="display:none;">
+            <div class="stat-chip">
+              <span class="stat-chip-label">Files Loaded</span>
+              <span class="stat-chip-value" id="statFiles">0</span>
+            </div>
+            <div class="stat-chip">
+              <span class="stat-chip-label">Total Samples</span>
+              <span class="stat-chip-value green" id="statSamples">0</span>
+            </div>
+            <div class="stat-chip">
+              <span class="stat-chip-label">Categories Covered</span>
+              <span class="stat-chip-value" id="statCategories">0</span>
+            </div>
+            <div class="stat-chip">
+              <span class="stat-chip-label">Ready for Training</span>
+              <span class="stat-chip-value green" id="statReady">0</span>
+            </div>
+          </div>
+
+          <!-- Drop Zone -->
+          <div class="drop-zone" id="dropZone"
+               ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+            <input type="file" id="fileInput" accept=".xls,.xlsx,.csv" multiple onchange="handleFiles(this.files)">
+            <div class="drop-zone-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+            </div>
+            <div class="drop-zone-text">Drag & drop files here, or <span>browse</span></div>
+            <div class="drop-zone-sub">Supports XLS, XLSX, and CSV formats</div>
+            <div class="file-types">
+              <span class="file-type-badge">XLS</span>
+              <span class="file-type-badge">XLSX</span>
+              <span class="file-type-badge">CSV</span>
+            </div>
+            <div class="file-size-note">Maximum file size: 50 MB per file · Up to 10 files</div>
+          </div>
+
+          <!-- Inline Error -->
+          <div class="inline-error" id="uploadError">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span id="uploadErrorMsg"></span>
+          </div>
+
+          <!-- File List -->
+          <div class="file-list" id="fileList"></div>
+
+          <!-- Column Mapping -->
+          <div class="mapping-section" id="mappingSection" style="display:none;">
+            <div class="mapping-title">Column Mapping — Map your file columns to training fields</div>
+            <div class="mapping-grid">
+              <div>
+                <div class="mapping-label">Document / Text Column</div>
+                <select class="mapping-select" id="mapDoc">
+                  <option value="">— Select column —</option>
+                  <option>document_text</option>
+                  <option>content</option>
+                  <option>description</option>
+                  <option>text</option>
+                  <option>sample</option>
+                </select>
+              </div>
+              <div class="mapping-arrow">→</div>
+              <div>
+                <div class="mapping-label">Training Label / Category Column</div>
+                <select class="mapping-select" id="mapLabel">
+                  <option value="">— Select column —</option>
+                  <option>category</option>
+                  <option>classification</option>
+                  <option>label</option>
+                  <option>class</option>
+                  <option>type</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Row -->
+          <div class="training-actions">
+            <button class="btn-primary" id="trainBtn" onclick="startTraining()" disabled>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              START LLM TRAINING
+            </button>
+            <button class="btn-secondary" onclick="clearAllFiles()">Clear All</button>
+            <span class="hint-text" id="trainHint">Upload at least one file to enable training</span>
+          </div>
+
+        </div>
+        <!-- end training section -->
+
+      </div><!-- end categories tab -->
+
+      <!-- ── Other Tabs (placeholders) ── -->
+      <div class="tab-body" id="tab-model">
+        <div class="section-title">Model Configuration</div>
+        <p style="color:#7a8cb0;font-size:13.5px;">Configure the classification model parameters here.</p>
+      </div>
+      <div class="tab-body" id="tab-evaluation">
+        <div class="section-title">Evaluation</div>
+        <p style="color:#7a8cb0;font-size:13.5px;">View model evaluation metrics and performance reports.</p>
+      </div>
+      <div class="tab-body" id="tab-runs">
+        <div class="section-title">Runs</div>
+        <p style="color:#7a8cb0;font-size:13.5px;">Review historical classification runs and their outcomes.</p>
+      </div>
+      <div class="tab-body" id="tab-sensitive">
+        <div class="section-title">Sensitive Categories</div>
+        <p style="color:#7a8cb0;font-size:13.5px;">Define and manage sensitive data categories that require special handling.</p>
+      </div>
+
+    </div><!-- end page-card -->
+  </div><!-- end content-area -->
+</div><!-- end main -->
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── State ──
+const uploadedFiles = [];
+
+// ── Tab Switching ──
+function switchTab(el, tabId) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-body').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-' + tabId).classList.add('active');
+}
+
+// ── Category Rows ──
+function addRow() {
+  const wrap = document.createElement('div');
+  wrap.className = 'category-card-wrap';
+  wrap.innerHTML = `
+    <div class="category-card">
+      <div class="field-group">
+        <label>Category Name</label>
+        <input type="text" placeholder="">
+      </div>
+      <div class="field-group">
+        <label>Category Description</label>
+        <input type="text" placeholder="">
+      </div>
+    </div>
+    <button class="icon-btn remove" onclick="removeRow(this)" title="Remove">−</button>`;
+  document.getElementById('categoryRows').appendChild(wrap);
+  wrap.querySelector('input').focus();
+}
+
+function removeRow(btn) {
+  const rows = document.querySelectorAll('.category-card-wrap');
+  if (rows.length === 1) { showToast('At least one category row is required.', 'error'); return; }
+  btn.closest('.category-card-wrap').remove();
+}
+
+function handleCategoriesSubmit() {
+  const inputs = document.querySelectorAll('#categoryRows input');
+  let valid = true;
+  inputs.forEach(i => { if (!i.value.trim()) { i.style.borderColor = '#fca5a5'; valid = false; } else { i.style.borderColor = '#d5dae6'; } });
+  if (!valid) { showToast('Please fill in all category fields before submitting.', 'error'); return; }
+  showToast('Categories saved successfully.', 'success');
+}
+
+// ── File Handling ──
+const ALLOWED_TYPES = ['.xls', '.xlsx', '.csv'];
+const MAX_SIZE_MB = 50;
+const MAX_FILES = 10;
+
+function handleDragOver(e) { e.preventDefault(); document.getElementById('dropZone').classList.add('dragover'); }
+function handleDragLeave(e) { document.getElementById('dropZone').classList.remove('dragover'); }
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').classList.remove('dragover');
+  handleFiles(e.dataTransfer.files);
+}
+
+function handleFiles(files) {
+  clearError();
+  const fileArr = Array.from(files);
+
+  if (uploadedFiles.length + fileArr.length > MAX_FILES) {
+    showError(`Maximum ${MAX_FILES} files allowed. You currently have ${uploadedFiles.length} file(s) uploaded.`);
+    return;
+  }
+
+  for (const file of fileArr) {
+    const ext = '.' + file.name.split('.').pop().toLowerCase();
+    if (!ALLOWED_TYPES.includes(ext)) {
+      showError(`"${file.name}" is not supported. Please upload XLS, XLSX, or CSV files only.`);
+      continue;
+    }
+    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+      showError(`"${file.name}" exceeds the ${MAX_SIZE_MB} MB size limit (${(file.size/1024/1024).toFixed(1)} MB).`);
+      continue;
+    }
+    if (uploadedFiles.find(f => f.name === file.name)) {
+      showError(`"${file.name}" has already been added.`);
+      continue;
+    }
+    addFileToList(file);
+  }
+  document.getElementById('fileInput').value = '';
+}
+
+function addFileToList(file) {
+  const ext = file.name.split('.').pop().toUpperCase();
+  const sizeMb = (file.size / 1024 / 1024).toFixed(2);
+  const fakeRows = Math.floor(Math.random() * 4500) + 500;
+  const id = 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+
+  uploadedFiles.push({ id, name: file.name, ext, size: sizeMb, rows: fakeRows, status: 'processing' });
+  renderFileList();
+  updateStats();
+  updateTrainButton();
+  showMappingSection();
+
+  // Simulate processing
+  setTimeout(() => {
+    const f = uploadedFiles.find(f => f.id === id);
+    if (f) { f.status = 'ready'; renderFileList(); updateStats(); updateTrainButton(); }
+  }, 1800 + Math.random() * 1200);
+}
+
+function renderFileList() {
+  const list = document.getElementById('fileList');
+  if (uploadedFiles.length === 0) { list.innerHTML = ''; return; }
+
+  list.innerHTML = uploadedFiles.map(f => `
+    <div class="file-item" id="${f.id}">
+      <div class="file-icon ${f.ext === 'CSV' ? 'csv' : 'xlsx'}">${f.ext}</div>
+      <div class="file-meta">
+        <div class="file-name">${f.name}</div>
+        <div class="file-info">
+          ${f.size} MB
+          ${f.status === 'ready' ? `· <span class="row-count">${f.rows.toLocaleString()} rows</span>` : ''}
+        </div>
+        ${f.status === 'processing' ? `
+          <div class="progress-wrap">
+            <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:65%;animation:progressAnim 1.5s ease infinite alternate;"></div></div>
+            <div class="progress-label">Processing…</div>
+          </div>` : ''}
+      </div>
+      <span class="file-status ${f.status}">
+        ${f.status === 'ready' ? '✓ Ready' : f.status === 'processing' ? '⟳ Processing' : '✗ Error'}
+      </span>
+      <button class="file-remove" onclick="removeFile('${f.id}')" title="Remove file">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>`).join('');
+}
+
+function removeFile(id) {
+  const idx = uploadedFiles.findIndex(f => f.id === id);
+  if (idx > -1) uploadedFiles.splice(idx, 1);
+  renderFileList();
+  updateStats();
+  updateTrainButton();
+  if (uploadedFiles.length === 0) showMappingSection(false);
+}
+
+function clearAllFiles() {
+  uploadedFiles.length = 0;
+  renderFileList();
+  updateStats();
+  updateTrainButton();
+  showMappingSection(false);
+  clearError();
+  showToast('All training files removed.');
+}
+
+function updateStats() {
+  const hasFiles = uploadedFiles.length > 0;
+  document.getElementById('trainingStats').style.display = hasFiles ? 'flex' : 'none';
+  if (!hasFiles) return;
+  const ready = uploadedFiles.filter(f => f.status === 'ready');
+  document.getElementById('statFiles').textContent = uploadedFiles.length;
+  document.getElementById('statSamples').textContent = ready.reduce((s, f) => s + f.rows, 0).toLocaleString();
+  document.getElementById('statCategories').textContent = Math.min(ready.length * 3, 12);
+  document.getElementById('statReady').textContent = ready.length;
+}
+
+function updateTrainButton() {
+  const readyCount = uploadedFiles.filter(f => f.status === 'ready').length;
+  const btn = document.getElementById('trainBtn');
+  const hint = document.getElementById('trainHint');
+  btn.disabled = readyCount === 0;
+  hint.textContent = readyCount === 0
+    ? 'Upload at least one file to enable training'
+    : `${readyCount} file(s) ready — click to start LLM fine-tuning`;
+}
+
+function showMappingSection(show = true) {
+  document.getElementById('mappingSection').style.display = show ? 'block' : 'none';
+}
+
+function startTraining() {
+  const docCol = document.getElementById('mapDoc').value;
+  const labelCol = document.getElementById('mapLabel').value;
+  if (!docCol || !labelCol) {
+    showError('Please select both the Document/Text column and the Label/Category column before starting training.');
+    return;
+  }
+  const btn = document.getElementById('trainBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-dasharray="30" stroke-dashoffset="10"/></svg> TRAINING…';
+  document.getElementById('trainHint').textContent = 'LLM fine-tuning in progress — this may take a few minutes';
+
+  setTimeout(() => {
+    btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> TRAINING COMPLETE';
+    btn.style.background = '#065f46';
+    document.getElementById('trainHint').textContent = 'Model has been updated with your training data';
+    showToast('LLM training completed successfully. Model updated.', 'success');
+  }, 3000);
+}
+
+// ── Helpers ──
+function showError(msg) {
+  document.getElementById('uploadErrorMsg').textContent = msg;
+  document.getElementById('uploadError').classList.add('show');
+  setTimeout(clearError, 6000);
+}
+function clearError() {
+  document.getElementById('uploadError').classList.remove('show');
+}
+
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' ' + type : '');
+  setTimeout(() => { t.className = 'toast'; }, 3500);
+}
+</script>
+
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes progressAnim { from { width: 40%; } to { width: 85%; } }
+</style>
+
+</body>
+</html>
